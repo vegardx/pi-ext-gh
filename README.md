@@ -43,7 +43,7 @@ future `pi-ext-review` PR mode) all do GitHub operations. Rather than
 re-documenting the host-routing rules in every package, they all point
 at this skill. One source of truth for:
 
-- "Am I on public `github.com`, corporate GHE, or GHES?"
+- "Am I on `github.com`, a GHEC-DR tenant (`*.ghe.com`), or a GHES instance?"
 - "When do I need `-R`? When do I need `--hostname`? When neither?"
 - "How do I push to a fork on a cross-repo PR without creating a stray
   branch on the upstream?"

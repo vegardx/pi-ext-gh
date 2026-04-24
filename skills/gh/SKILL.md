@@ -1,6 +1,6 @@
 ---
 name: gh
-description: Use this skill for GitHub operations via the gh CLI — PRs, issues, CI/CD, releases, search, and API calls. Explains multi-host auth routing for github.com, corporate GHE (e.g. tenant.ghe.com), and GHES instances. Other workflow commands (/commit, /develop park path, /review PR mode) dispatch through these conventions.
+description: Use this skill for GitHub operations via the gh CLI — PRs, issues, CI/CD, releases, search, and API calls. Explains multi-host auth routing for GitHub.com, GitHub Enterprise Cloud on GHE.com, and GitHub Enterprise Server. Other workflow commands (/commit, /develop park path, /review PR mode) dispatch through these conventions.
 ---
 
 # GitHub CLI
@@ -9,29 +9,49 @@ Use the `gh` CLI for GitHub operations. Prefer it over any MCP GitHub
 server — it's faster, more reliable, and uses 9–32× fewer tokens for the
 same operation.
 
+## GitHub hosting types
+
+There are three distinct GitHub platforms. They share the UI and most
+features, but differ in hosting, API base paths, and how `gh` resolves
+them.
+
+| Platform | Hostname pattern | API base | Notes |
+|---|---|---|---|
+| **GitHub.com** | `github.com` | `api.github.com` | Public SaaS. Also hosts GitHub Enterprise Cloud (GHEC) orgs — same domain, same API. |
+| **GitHub Enterprise Cloud on GHE.com** | `<tenant>.ghe.com` | `api.<tenant>.ghe.com` | GHEC with data residency (GHEC-DR). Each tenant gets its own subdomain. Same cloud infrastructure as GitHub.com, different domain. |
+| **GitHub Enterprise Server (GHES)** | Any customer-chosen hostname | `<hostname>/api/v3` (REST), `<hostname>/api/graphql` (GraphQL) | Self-hosted, on-premises. API paths are prefixed under `/api/` — this is the key difference. |
+
+`gh` handles these transparently for subcommands (`gh pr`, `gh issue`,
+etc.) — it reads the host from `gh auth` config and the git remote. The
+distinction matters when you use **`gh api`** directly: on GHES the REST
+path is `/api/v3/repos/...` not `/repos/...`, and GraphQL lives at
+`/api/graphql` not `/graphql`. Prefer subcommands over raw API calls to
+avoid this.
+
 ## Multi-host routing
 
 You may be authenticated to multiple GitHub hosts in the same shell
-session — public `github.com`, a corporate GHEC-DR tenant
-(`<tenant>.ghe.com`), a self-hosted GHES instance, or any combination.
-Determining the right host before running a command is the one thing you
-have to get right; everything else falls out of it.
+session — `github.com`, a GHEC-DR tenant (`<tenant>.ghe.com`), a GHES
+instance, or any combination. Determining the right host before running
+a command is the one thing you have to get right; everything else falls
+out of it.
 
 ### How to figure out the host
 
 Try these in order:
 
 1. **Explicit URL in the user's message.** If the user pastes
-   `https://ghes.example.com/org/repo/pull/42`, extract the host — that's
+   `https://acme.ghe.com/org/repo/pull/42`, extract the host — that's
    authoritative.
 2. **Current repo's remote.** Inside a git repo:
    ```bash
    git remote get-url origin
-   # e.g. git@ghes.example.com:org/repo.git → host is ghes.example.com
+   # e.g. git@acme.ghe.com:org/repo.git  → host is acme.ghe.com  (GHEC-DR)
+   # e.g. git@ghes.corp.com:org/repo.git → host is ghes.corp.com (GHES)
    # e.g. https://github.com/org/repo.git → host is github.com
    ```
    If you're in a repo, this is the host for operations on that repo.
-3. **Default assumption.** If the current repo is on a corporate GHE
+3. **Default assumption.** If the current repo is on a non-github.com
    host, assume the user means that host unless they say otherwise. If
    they reference a well-known public repo (e.g. `facebook/react`,
    `kubernetes/kubernetes`), assume `github.com`.
@@ -41,7 +61,7 @@ Try these in order:
 
 **When the target is the current repo, do not set a host flag.**
 `gh` auto-detects from the git remote. This works for every host type —
-public, GHEC-DR, GHES:
+GitHub.com, GHEC-DR, GHES:
 
 ```bash
 # All of these work in a repo on any host —
@@ -57,20 +77,22 @@ gh api repos/{owner}/{repo}/pulls
 Available since `gh` 2.90+; it's the cleanest form:
 
 ```bash
-gh pr list -R ghes.example.com/org/other-repo
-gh issue view 123 -R github.com/anthropic/claude-code
+gh pr list -R acme.ghe.com/org/other-repo          # GHEC-DR
+gh issue view 123 -R github.com/anthropic/claude-code  # GitHub.com
+gh pr list -R ghes.corp.com/org/other-repo           # GHES
 ```
 
 For **`gh api`** against a different host, use `--hostname`:
 
 ```bash
-gh api --hostname ghes.example.com repos/org/other-repo/pulls
+gh api --hostname acme.ghe.com repos/org/other-repo/pulls
+gh api --hostname ghes.corp.com /api/v3/repos/org/other-repo/pulls  # Note: GHES needs /api/v3 prefix
 ```
 
 **Backward-compatible fallback** for older `gh` versions:
 
 ```bash
-GH_HOST=ghes.example.com gh pr list -R org/other-repo
+GH_HOST=acme.ghe.com gh pr list -R org/other-repo
 ```
 
 **Public `github.com` cross-repo (the default host) — no prefix needed:**
@@ -84,8 +106,9 @@ gh pr list -R owner/repo
 Before running anything, if you haven't already this session:
 
 ```bash
-gh auth status -h ghes.example.com
-gh auth status -h github.com
+gh auth status -h acme.ghe.com      # GHEC-DR tenant
+gh auth status -h ghes.corp.com     # GHES instance
+gh auth status -h github.com         # GitHub.com
 ```
 
 If you see "not logged in", tell the user to run `gh auth login -h <host>`
@@ -181,8 +204,8 @@ dedicated subcommand.
 
 When the target isn't the current directory's repo, pass `-R` (or
 `--hostname` for `gh api`). Implicit targeting causes subtle bugs when
-the current directory's remote is the corporate host but you're trying
-to reference a public repo (or vice versa).
+the current directory's remote is on one host but you're trying to
+reference a repo on another.
 
 ## Operations quick reference
 
