@@ -1,5 +1,10 @@
 # pi-ext-gh
 
+[![CI](https://img.shields.io/github/actions/workflow/status/vegardx/pi-ext-gh/ci.yml?branch=main&label=CI)](https://github.com/vegardx/pi-ext-gh/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/vegardx/pi-ext-gh)](https://github.com/vegardx/pi-ext-gh/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/vegardx/pi-ext-gh)](LICENSE)
+[![pi.dev extension](https://img.shields.io/badge/pi.dev-extension-blue)](https://pi.dev)
+
 Skills-only package. `/skill:gh` is the canonical reference for running
 GitHub operations via the `gh` CLI — covers multi-host auth routing,
 cross-repo / fork-aware pushes, head-drift detection, and links out to

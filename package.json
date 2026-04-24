@@ -1,12 +1,15 @@
 {
-	"name": "pi-ext-gh",
-	"version": "0.1.0",
+	"name": "@vegardx/pi-ext-gh",
+	"version": "0.0.0-development",
 	"description": "pi.dev skill: canonical gh CLI reference — multi-host auth, fork-aware push, PR/issues/CI/releases/search/API",
 	"keywords": ["pi-package", "pi-extension", "pi-skill", "github", "gh"],
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/vegardx/pi-ext-gh.git"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/"
 	},
 	"type": "module",
 	"engines": {
@@ -18,5 +21,15 @@
 	"peerDependencies": {
 		"@mariozechner/pi-coding-agent": "*",
 		"@sinclair/typebox": "*"
+	},
+	"devDependencies": {
+		"@semantic-release/commit-analyzer": "^13.0.1",
+		"@semantic-release/github": "^11.0.3",
+		"@semantic-release/npm": "^13.1.5",
+		"@semantic-release/release-notes-generator": "^14.0.3",
+		"semantic-release": "^25.0.1"
+	},
+	"scripts": {
+		"check": "echo 'Skills-only package — no code to check'"
 	}
 }
