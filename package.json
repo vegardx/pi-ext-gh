@@ -1,0 +1,22 @@
+{
+	"name": "pi-ext-gh",
+	"version": "0.1.0",
+	"description": "pi.dev skill: canonical gh CLI reference — multi-host auth, fork-aware push, PR/issues/CI/releases/search/API",
+	"keywords": ["pi-package", "pi-extension", "pi-skill", "github", "gh"],
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/vegardx/pi-ext-gh.git"
+	},
+	"type": "module",
+	"engines": {
+		"node": ">=20"
+	},
+	"pi": {
+		"skills": ["./skills/"]
+	},
+	"peerDependencies": {
+		"@mariozechner/pi-coding-agent": "*",
+		"@sinclair/typebox": "*"
+	}
+}
