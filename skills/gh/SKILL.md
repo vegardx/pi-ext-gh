@@ -1,6 +1,6 @@
 ---
 name: gh
-description: Use this skill for GitHub operations via the gh CLI — PRs, issues, CI/CD, releases, search, and API calls. Explains multi-host auth routing for github.com, corporate GHE (e.g. dnb.ghe.com), and GHES instances. Other workflow commands (/commit, /develop park path, /review PR mode) dispatch through these conventions.
+description: Use this skill for GitHub operations via the gh CLI — PRs, issues, CI/CD, releases, search, and API calls. Explains multi-host auth routing for github.com, corporate GHE (e.g. tenant.ghe.com), and GHES instances. Other workflow commands (/commit, /develop park path, /review PR mode) dispatch through these conventions.
 ---
 
 # GitHub CLI
@@ -22,12 +22,12 @@ have to get right; everything else falls out of it.
 Try these in order:
 
 1. **Explicit URL in the user's message.** If the user pastes
-   `https://dnb.ghe.com/org/repo/pull/42`, extract the host — that's
+   `https://ghes.example.com/org/repo/pull/42`, extract the host — that's
    authoritative.
 2. **Current repo's remote.** Inside a git repo:
    ```bash
    git remote get-url origin
-   # e.g. git@dnb.ghe.com:org/repo.git → host is dnb.ghe.com
+   # e.g. git@ghes.example.com:org/repo.git → host is ghes.example.com
    # e.g. https://github.com/org/repo.git → host is github.com
    ```
    If you're in a repo, this is the host for operations on that repo.
@@ -44,7 +44,7 @@ Try these in order:
 public, GHEC-DR, GHES:
 
 ```bash
-# All of these work in a repo on dnb.ghe.com OR github.com OR GHES —
+# All of these work in a repo on any host —
 # gh picks the host from the current origin remote.
 gh pr create --fill
 gh pr list
@@ -57,20 +57,20 @@ gh api repos/{owner}/{repo}/pulls
 Available since `gh` 2.90+; it's the cleanest form:
 
 ```bash
-gh pr list -R dnb.ghe.com/org/other-repo
+gh pr list -R ghes.example.com/org/other-repo
 gh issue view 123 -R github.com/anthropic/claude-code
 ```
 
 For **`gh api`** against a different host, use `--hostname`:
 
 ```bash
-gh api --hostname dnb.ghe.com repos/org/other-repo/pulls
+gh api --hostname ghes.example.com repos/org/other-repo/pulls
 ```
 
 **Backward-compatible fallback** for older `gh` versions:
 
 ```bash
-GH_HOST=dnb.ghe.com gh pr list -R org/other-repo
+GH_HOST=ghes.example.com gh pr list -R org/other-repo
 ```
 
 **Public `github.com` cross-repo (the default host) — no prefix needed:**
@@ -84,7 +84,7 @@ gh pr list -R owner/repo
 Before running anything, if you haven't already this session:
 
 ```bash
-gh auth status -h dnb.ghe.com
+gh auth status -h ghes.example.com
 gh auth status -h github.com
 ```
 
